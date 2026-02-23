@@ -44,13 +44,21 @@ jobs:
           cd ..
 
       - name: Build iOS App Bundle
-        # Kita ganti 'ipa' jadi 'ios --no-codesign' agar prosesnya tuntas
+        # Build without codesign, outputs a .app folder
         run: flutter build ios --release --no-codesign
+
+      - name: Package into unsigned IPA
+        # Create Payload folder, move .app inside, and zip it as an .ipa
+        run: |
+          mkdir -p build/ios/iphoneos/Payload
+          mv build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
+          cd build/ios/iphoneos
+          zip -r neura-app.ipa Payload
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-build-bundle
-          # Kita ambil seluruh folder .app hasil build
-          path: build/ios/iphoneos/*.app
+          name: neura-ios-ipa
+          # Upload the nicely packaged .ipa file
+          path: build/ios/iphoneos/neura-app.ipa
           if-no-files-found: error
